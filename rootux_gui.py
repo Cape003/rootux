@@ -29,21 +29,24 @@ class RootuxWindow(Gtk.ApplicationWindow):
         self.set_default_size(1000, 700)
         self.pw_manager = PipeWireManager()
         
-        css = '''.fader { background: #2a2a2a; border-radius: 5px; min-height: 150px; }
+        css = '.rootux-box { margin: 10px; }
+.fader { background: #2a2a2a; border-radius: 5px; min-height: 150px; }
 .mute-button { background: #3a3a3a; color: white; border-radius: 20px; }
 .mute-button:checked { background: #ff4444; }
-label { color: #eee; }'''
+label { color: #eee; }'
         provider = Gtk.CssProvider()
         provider.load_from_data(css.encode())
         Gtk.StyleContext.add_provider_for_display(Gdk.Display.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
         
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        main_box.get_style_context().add_class("rootux-box")
         self.set_child(main_box)
         
         header = Adw.HeaderBar()
         main_box.append(header)
         
         self.stack = Gtk.Stack()
+        self.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
         main_box.append(self.stack)
         
         self._create_mixer_tab()
@@ -56,7 +59,7 @@ label { color: #eee; }'''
 
     def _create_mixer_tab(self):
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
-        box.set_margin_all(10)
+        box.get_style_context().add_class("rootux-box")
         
         for name in ['Game', 'Chat', 'Media', 'Aux', 'Mic']:
             hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
@@ -67,9 +70,11 @@ label { color: #eee; }'''
                 adjustment=Gtk.Adjustment(lower=0, upper=100, value=75)
             )
             fader.set_size_request(30, 150)
+            fader.get_style_context().add_class("fader")
             hbox.append(fader)
             
             mute_btn = Gtk.ToggleButton()
+            mute_btn.get_style_context().add_class("mute-button")
             mute_btn.connect('toggled', lambda b, n=name: print(f'Mute {n}'))
             hbox.append(mute_btn)
             
@@ -80,7 +85,7 @@ label { color: #eee; }'''
 
     def _create_routing_tab(self):
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
-        box.set_margin_all(10)
+        box.get_style_context().add_class("rootux-box")
         
         for name in ['Game_Sink', 'Chat_Sink', 'Media_Sink', 'Rootux_Output']:
             btn = Gtk.Button(label=f'Créer {name}')
