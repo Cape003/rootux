@@ -29,11 +29,13 @@ class RootuxWindow(Gtk.ApplicationWindow):
         self.set_default_size(1000, 700)
         self.pw_manager = PipeWireManager()
         
-        css = '.rootux-box { margin: 10px; }
-.fader { background: #2a2a2a; border-radius: 5px; min-height: 150px; }
-.mute-button { background: #3a3a3a; color: white; border-radius: 20px; }
-.mute-button:checked { background: #ff4444; }
-label { color: #eee; }'
+        css = (
+            '.rootux-box { margin: 10px; } '
+            '.fader { background: #2a2a2a; border-radius: 5px; min-height: 150px; } '
+            '.mute-button { background: #3a3a3a; color: white; border-radius: 20px; } '
+            '.mute-button:checked { background: #ff4444; } '
+            'label { color: #eee; }'
+        )
         provider = Gtk.CssProvider()
         provider.load_from_data(css.encode())
         Gtk.StyleContext.add_provider_for_display(Gdk.Display.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
