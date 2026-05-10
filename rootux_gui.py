@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Rootux - Studio audio tout-en-un pour Linux
-# Créé par Cape003 avec l'aide de l'IA
+# Créé par Cape003 avec l'aide de l'IA (Le Chat, Mistral AI)
 # Licence MIT
 
 import gi
@@ -28,12 +28,10 @@ class RootuxWindow(Adw.ApplicationWindow):
         self.set_title('Rootux Studio')
         self.set_default_size(900, 650)
         
-        # Forcer le mode sombre pour un look "Pro Audio"
         Adw.StyleManager.get_default().set_color_scheme(Adw.ColorScheme.PREFER_DARK)
         
         self.pw_manager = PipeWireManager()
         
-        # Amélioration drastique du CSS
         css = """
         .mixer-channel {
             background-color: @card_bg_color;
@@ -41,12 +39,13 @@ class RootuxWindow(Adw.ApplicationWindow):
             padding: 15px 20px;
             margin: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            min-height: 300px;
         }
         .mixer-channel label {
             font-size: 14px;
         }
         .fader {
-            min-height: 280px;
+            min-height: 250px;
             margin: 15px 0;
         }
         .fader highlight {
@@ -72,11 +71,9 @@ class RootuxWindow(Adw.ApplicationWindow):
             Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
         
-        # Conteneur principal
         self.main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.set_content(self.main_box)
         
-        # HeaderBar avec sélecteur de vue (onglets modernes)
         self.header = Adw.HeaderBar()
         self.main_box.append(self.header)
         
@@ -89,22 +86,18 @@ class RootuxWindow(Adw.ApplicationWindow):
         self.switcher.set_policy(Adw.ViewSwitcherPolicy.WIDE)
         self.header.set_title_widget(self.switcher)
         
-        # Génération des pages
         self._create_mixer_tab()
         self._create_routing_tab()
 
     def _create_mixer_tab(self):
-        # Utilisation d'un ScrolledWindow au cas où l'écran est trop petit
         scroll = Gtk.ScrolledWindow()
         scroll.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.NEVER)
         
-        # L'astuce est ici : on aligne les canaux HORIZONTALEMENT
         mixer_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)
         mixer_box.set_halign(Gtk.Align.CENTER)
         mixer_box.set_valign(Gtk.Align.CENTER)
         scroll.set_child(mixer_box)
         
-        # Données des canaux (Nom, Icône GNOME, Volume par défaut)
         channels = [
             ('Game', 'applications-games-symbolic', 100),
             ('Chat', 'user-available-symbolic', 80),
@@ -114,11 +107,9 @@ class RootuxWindow(Adw.ApplicationWindow):
         ]
         
         for name, icon, default_vol in channels:
-            # Conteneur du canal (la "tranche" de la table de mixage)
             channel_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
             channel_box.add_css_class("mixer-channel")
             
-            # En-tête du canal (Icône + Nom)
             icon_img = Gtk.Image.new_from_icon_name(icon)
             icon_img.set_pixel_size(32)
             label = Gtk.Label(label=f"<b>{name}</b>", use_markup=True)
@@ -126,25 +117,23 @@ class RootuxWindow(Adw.ApplicationWindow):
             channel_box.append(icon_img)
             channel_box.append(label)
             
-            # Fader (Slider vertical)
             fader = Gtk.Scale(
                 orientation=Gtk.Orientation.VERTICAL,
                 adjustment=Gtk.Adjustment(lower=0, upper=100, value=default_vol, step_increment=1)
             )
-            fader.set_inverted(True) # Met le 100% en haut et le 0% en bas
+            fader.set_inverted(True)
             fader.set_draw_value(True)
             fader.set_value_pos(Gtk.PositionType.BOTTOM)
             fader.add_css_class("fader")
+            fader.set_vexpand(True)
             channel_box.append(fader)
             
-            # Bouton Mute
             mute_btn = Gtk.ToggleButton()
             mute_btn.set_icon_name("audio-volume-muted-symbolic")
             mute_btn.add_css_class("mute-btn")
             mute_btn.set_tooltip_text(f"Mute {name}")
             mute_btn.connect('toggled', lambda b, n=name: print(f'Mute {n} : {"Actif" if b.get_active() else "Inactif"}'))
             
-            # Centrer le bouton Mute
             btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
             btn_box.set_halign(Gtk.Align.CENTER)
             btn_box.append(mute_btn)
@@ -152,15 +141,12 @@ class RootuxWindow(Adw.ApplicationWindow):
             
             mixer_box.append(channel_box)
         
-        # Ajout à la stack avec une icône pour l'onglet
         page = self.stack.add_titled(scroll, 'mixer', 'Mixeur')
         page.set_icon_name('audio-volume-high-symbolic')
 
     def _create_routing_tab(self):
-        # Utilisation des composants natifs Adwaita pour un look "Paramètres" propre
         page = Adw.PreferencesPage()
         
-        # Section 1 : Création des flux
         group_create = Adw.PreferencesGroup(title="Création de nœuds virtuels", description="Générez vos points de routage PipeWire")
         page.add(group_create)
         
@@ -176,7 +162,6 @@ class RootuxWindow(Adw.ApplicationWindow):
             row.add_suffix(btn)
             group_create.add(row)
         
-        # Section 2 : Monitoring des nœuds
         group_nodes = Adw.PreferencesGroup(title="Nœuds PipeWire Actifs")
         
         refresh_btn = Gtk.Button(label="Rafraîchir la liste", valign=Gtk.Align.CENTER)
@@ -187,9 +172,8 @@ class RootuxWindow(Adw.ApplicationWindow):
         header_row.add_suffix(refresh_btn)
         group_nodes.add(header_row)
         
-        # Conteneur pour la liste des nœuds
         self.nodes_list = Gtk.ListBox()
-        self.nodes_list.add_css_class("boxed-list") # Style natif GNOME pour les listes
+        self.nodes_list.add_css_class("boxed-list")
         group_nodes.add(self.nodes_list)
         
         page.add(group_nodes)
@@ -201,7 +185,7 @@ class RootuxWindow(Adw.ApplicationWindow):
         self.nodes_list.remove_all()
         try:
             result = subprocess.run(['pw-cli', 'list-objects'], capture_output=True, text=True)
-            for node in result.stdout.splitlines()[:50]: # Limiter l'affichage pour ne pas geler l'UI
+            for node in result.stdout.splitlines()[:50]:
                 if node.strip():
                     row = Adw.ActionRow(title=node.strip()[:60] + ("..." if len(node)>60 else ""))
                     self.nodes_list.append(row)
